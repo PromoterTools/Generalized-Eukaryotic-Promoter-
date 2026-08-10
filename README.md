@@ -491,4 +491,4 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ---
 
-*For questions, issues, or collaboration inquiries, please open a GitHub Issue or contact msq@szu.edu.cn.*
+*For questions, issues, or collaboration inquiries, please open a GitHub Issue or contact shujaat@szu.edu.cn.*
