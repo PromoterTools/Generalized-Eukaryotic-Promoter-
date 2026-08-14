@@ -7,7 +7,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-Prediction?include_prereleases)](https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-Prediction/releases)
 
 <p align="center">
-  <img src="figures/graphical_abstract.jpg" alt="Graphical abstract of the two-stage eukaryotic promoter prediction framework" width="95%">
+  <img src="Graphical abstract.jpg" alt="Graphical abstract of the two-stage eukaryotic promoter prediction framework" width="95%">
 </p>
 
 <p align="center"><b>Graphical abstract.</b> Sixteen EPDnew species were collected; 15 were used for Stage 1 model development and <i>Drosophila melanogaster</i> was withheld for cross-species evaluation. Stage 2 uses species-specific, CAGE-derived promoter-activity labels for six vertebrate species.</p>
