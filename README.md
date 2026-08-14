@@ -14,7 +14,7 @@
 
 > **Authors:** Muhammad Shujaat, Shi-Qing Mao  
 > **Affiliation:** Institute for Advanced Study, Shenzhen University, Shenzhen, China  
-> **Corresponding author:** Shi-Qing Mao — msq@szu.edu.cn
+
 
 ---
 
@@ -508,4 +508,4 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ## Contact
 
-For software issues, please open a GitHub Issue. For manuscript correspondence, contact **Shi-Qing Mao (msq@szu.edu.cn)**.
+For software issues, please open a GitHub Issue. contact **Dr. Shujaat (shujaat@szu.edu.cn)**.
