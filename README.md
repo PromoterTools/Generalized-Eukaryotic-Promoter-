@@ -2,9 +2,9 @@
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-Prediction?style=social)](https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-Prediction)
-[![GitHub Forks](https://img.shields.io/github/forks/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-Prediction?style=social)](https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-Prediction/fork)
-[![GitHub release](https://img.shields.io/github/v/release/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-Prediction?include_prereleases)](https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-Prediction/releases)
+[![GitHub Stars](https://img.shields.io/github/stars/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-?style=social)](https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-)
+[![GitHub Forks](https://img.shields.io/github/forks/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-?style=social)](https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-/fork)
+[![GitHub release](https://img.shields.io/github/v/release/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-?include_prereleases)](https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-/releases)
 
 <p align="center">
   <img src="Fig. 1.png" alt="Graphical abstract of the two-stage eukaryotic promoter prediction framework" width="95%">
@@ -185,7 +185,7 @@ Generalized-Eukaryotic-Promoter-Prediction/
 ### Option 1 — Conda (recommended)
 
 ```bash
-git clone https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-Prediction.git
+git clone https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-.git
 cd Generalized-Eukaryotic-Promoter-Prediction
 conda env create -f environment.yml
 conda activate promoternet
@@ -199,7 +199,7 @@ A successful `--help` call verifies that the environment can load the prediction
 Build the container:
 
 ```bash
-git clone https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-Prediction.git
+git clone https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-.git
 cd Generalized-Eukaryotic-Promoter-Prediction
 docker build -t promoternet .
 ```
@@ -227,7 +227,7 @@ Then open `http://localhost:5000`.
 ### Option 3 — pip
 
 ```bash
-git clone https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-Prediction.git
+git clone https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-.git
 cd Generalized-Eukaryotic-Promoter-Prediction
 python -m venv .venv
 source .venv/bin/activate        # Linux/macOS
