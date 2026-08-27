@@ -162,8 +162,8 @@ outputs/
 Clone the repository:
 
 ```bash
-git clone https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-.git
-cd Generalized-Eukaryotic-Promoter-
+git clone https://github.com/ShujaatMuhammad/PromoterNet.git
+cd PromoterNet
 ```
 
 Create and activate a virtual environment.
