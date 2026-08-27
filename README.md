@@ -1,17 +1,4 @@
-# A Two-Stage Framework for Generalized Eukaryotic Promoter Prediction and Promoter Strength Classification
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-?style=social)](https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-)
-[![GitHub Forks](https://img.shields.io/github/forks/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-?style=social)](https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-/fork)
-[![GitHub release](https://img.shields.io/github/v/release/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-?include_prereleases)](https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-/releases)
-
-<p align="center">
-  <img src="Fig. 1.png" alt="Graphical abstract of the two-stage eukaryotic promoter prediction framework" width="95%">
-</p>
-
-<p align="center"><b>Graphical abstract.</b> Sixteen EPDnew species were collected; 15 were used for Stage 1 model development and <i>Drosophila melanogaster</i> was withheld for cross-species evaluation. Stage 2 uses species-specific, CAGE-derived promoter-activity labels for six vertebrate species.</p>
-# PromoterNet
 
 ## A Two-Stage Framework for Generalized Eukaryotic Promoter Prediction and Promoter Strength Classification
 
@@ -22,7 +9,7 @@
 
 The framework combines a CNN-BiLSTM model with self-attention for Stage 1 and species-specific CNN/XGBoost models for Stage 2. It also provides attention-based sequence interpretation, surrogate-CNN SHAP analysis, and an interactive Flask web server.
 
-![Graphical abstract](Graphical%20abstract.jpg)
+![Graphical abstract]  <img src="Fig. 1.png" alt="Graphical abstract of the two-stage eukaryotic promoter prediction framework" width="95%">
 
 ---
 
