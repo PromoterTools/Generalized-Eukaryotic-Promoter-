@@ -11,43 +11,105 @@
 </p>
 
 <p align="center"><b>Graphical abstract.</b> Sixteen EPDnew species were collected; 15 were used for Stage 1 model development and <i>Drosophila melanogaster</i> was withheld for cross-species evaluation. Stage 2 uses species-specific, CAGE-derived promoter-activity labels for six vertebrate species.</p>
+# PromoterNet
 
-> **Authors:** Muhammad Shujaat, Shi-Qing Mao  
-> **Affiliation:** Institute for Advanced Study, Shenzhen University, Shenzhen, China  
+## A Two-Stage Framework for Generalized Eukaryotic Promoter Prediction and Promoter Strength Classification
 
+**PromoterNet** is a two-stage computational framework for:
+
+1. **Generalized promoter recognition** across eukaryotic species, and
+2. **Species-specific CAGE-derived promoter activity classification** for promoter-positive sequences.
+
+The framework combines a CNN-BiLSTM model with self-attention for Stage 1 and species-specific CNN/XGBoost models for Stage 2. It also provides attention-based sequence interpretation, surrogate-CNN SHAP analysis, and an interactive Flask web server.
+
+![Graphical abstract](Graphical%20abstract.jpg)
+
+---
+
+## Web server
+
+**Public web server:**  
+https://promoter-prediction-app.onrender.com/
+
+> **Note:** The public deployment may require a short cold-start period after inactivity before the interface becomes available.
 
 ---
 
 ## Overview
 
-This repository contains the code, processed benchmark data, trained models, supplementary analyses, and deployment files for a two-stage framework for eukaryotic promoter analysis.
+PromoterNet separates two related but distinct prediction tasks.
 
-- **Stage 1 — promoter/non-promoter prediction:** a CNN–BiLSTM model with self-attention is trained on experimentally validated EPDnew promoters from **15 eukaryotic species** and GC-matched non-promoter sequences. All sequences used in the manuscript are **300 bp** long, spanning **−249 to +50 bp relative to the TSS**. *D. melanogaster* is withheld from model development and used as a separate cross-species binary evaluation set.
-- **Stage 2 — CAGE-derived promoter-activity classification:** promoter-positive sequences are classified as **strong** or **weak** using species-specific models for human, mouse, rat, dog, chicken, and rhesus macaque. Labels are derived from FANTOM5 CAGE transcriptional activity, using the upper and lower quartiles of the species-specific TPM distribution.
-- **Interpretability:** attention-based motif ranking is reported for the primary Stage 1 model. Nucleotide-level SHAP analysis is performed with a **separately trained one-hot surrogate CNN**; therefore, SHAP values explain the surrogate model directly and are interpreted only as approximate sequence-level evidence related to the primary model.
+### Stage 1 — Promoter vs non-promoter
 
-The Stage 2 models are **not species-identification models**. For Stage 2 inference, the user must provide the relevant species; confidence values from independently trained strong/weak classifiers are not compared to infer species identity.
+A 300-bp DNA window spanning **−249 to +50 bp relative to a putative transcription start site (TSS)** is classified as promoter or non-promoter using a multi-species CNN-BiLSTM model with self-attention.
+
+### Stage 2 — Species-specific promoter activity
+
+Sequences predicted as promoters are evaluated using the **known target species** selected by the user. Stage 2 predicts whether the promoter belongs to the upper- or lower-activity group defined from FANTOM5 CAGE measurements within that species.
+
+The current Stage 2 labels are:
+
+- **Strong / high activity:** upper quartile (Q75 and above)
+- **Weak / low activity:** lower quartile (Q25 and below)
+
+The middle 50% of promoters was excluded from binary Stage 2 training.
+
+> PromoterNet does **not** use confidence values from independently trained Stage 2 models to infer species identity. The target species is supplied by the user.
 
 ---
 
-## Key Results
+## Important scope
 
-### Stage 1
+PromoterNet is a **candidate-window classifier**, not a genome-wide promoter scanner.
 
-| Evaluation | Metric | Value |
-|---|---|---:|
-| Held-out Stage 1 test set | Accuracy | 0.9489 |
-| Held-out Stage 1 test set | F1-score | 0.9580 |
-| Held-out Stage 1 test set | ROC-AUC | 0.9742 |
-| Held-out Stage 1 test set | PR-AUC | 0.9846 |
-| 5-fold cross-validation | Accuracy | 0.9436 ± 0.0017 |
-| 5-fold cross-validation | F1-score | 0.9536 ± 0.0013 |
-| 5-fold cross-validation | ROC-AUC | 0.9727 ± 0.0020 |
-| Withheld *D. melanogaster* binary evaluation | Accuracy | 0.948 |
+Input sequences for the released models should be **300 bp long**, corresponding to the same −249/+50 TSS-centered window used for model development. Arbitrary-length genomic regions must first be converted into appropriate candidate windows before prediction.
 
-The withheld *D. melanogaster* evaluation contains **16,972 promoters and 16,972 GC-matched non-promoters** and is kept outside Stage 1 model development.
+The Stage 2 labels represent **relative CAGE-derived promoter activity within each species**. They should not be interpreted as universal, tissue-independent intrinsic promoter strength.
 
-### Stage 2
+---
+
+## Supported Stage 2 species
+
+| Species | Stage 2 model |
+|---|---|
+| Human | CNN |
+| Mouse | XGBoost |
+| Rat | CNN |
+| Dog | CNN |
+| Chicken | CNN |
+| Rhesus macaque | CNN |
+
+---
+
+## Key results
+
+### Stage 1 — Independent held-out evaluation
+
+| Metric | Value |
+|---|---:|
+| Accuracy | 0.9489 |
+| F1-score | 0.958 |
+| ROC-AUC | 0.9742 |
+| PR-AUC | 0.9846 |
+
+### Stage 1 — Five-fold cross-validation
+
+| Metric | Mean ± SD |
+|---|---:|
+| Accuracy | 0.9436 ± 0.0017 |
+| F1-score | 0.9536 ± 0.0013 |
+| ROC-AUC | 0.9727 ± 0.0020 |
+
+### Completely withheld *Drosophila melanogaster*
+
+The independent cross-species evaluation contains:
+
+- 16,972 promoter sequences
+- 16,972 GC-matched non-promoter sequences
+- 33,944 total sequences
+- Overall binary accuracy: **94.8%**
+
+### Stage 2 — Best species-specific ROC-AUC
 
 | Species | Best model | ROC-AUC |
 |---|---|---:|
@@ -60,452 +122,310 @@ The withheld *D. melanogaster* evaluation contains **16,972 promoters and 16,972
 
 ### Pooled Stage 2 baseline
 
-A single all-species pooled CNN–BiLSTM baseline was evaluated for comparison. On the pooled held-out test set it achieved:
-
 | Metric | Value |
 |---|---:|
-| Accuracy | 0.6186 |
-| ROC-AUC | 0.6708 |
-| PR-AUC | 0.6948 |
-| Precision | 0.7767 |
-| Recall | 0.3326 |
-| F1-score | 0.4658 |
-| MCC | 0.2890 |
-| Balanced accuracy | 0.6185 |
+| Accuracy | 0.619 |
+| ROC-AUC | 0.671 |
+| PR-AUC | 0.695 |
+| Precision | 0.777 |
+| Recall | 0.333 |
+| F1-score | 0.466 |
+| MCC | 0.289 |
+| Balanced accuracy | 0.619 |
 
-Per-species ROC-AUC values from the pooled model were **0.828 (human), 0.632 (mouse), 0.685 (rat), 0.690 (dog), 0.483 (chicken), and 0.506 (macaque)**, with a macro-average species AUC of **0.637**. Because the pooled baseline and species-specific models do not use identical architectures, these results show that simple pooling did not improve performance in the present datasets but do not establish universal superiority of species-specific modelling.
-
----
-
-## Validation and Reviewer-Requested Analyses
-
-The revision includes the following additional analyses:
-
-- **Stage 1 five-fold cross-validation:** per-fold accuracy, F1-score, and ROC-AUC are reported in the Supplementary Information.
-- **Combined cross-validation confusion matrix:** precision 0.930, recall 0.978, specificity 0.893, and MCC approximately 0.884.
-- **SHAP stability:** five independently trained surrogate CNNs were evaluated across folds; pairwise Spearman correlations of mean SHAP scores ranged from **0.91 to 0.96**.
-- **Gene-aware validation:** gene-level partitioning was additionally examined where gene annotations were available; the human Stage 1 analysis achieved **94.12% accuracy and ROC-AUC 0.971**.
-- **Stage 2 sample-size analysis:** CNN AUC showed a positive but non-significant monotonic association with dataset size (Spearman **r = 0.77, p = 0.072**), whereas XGBoost showed no clear monotonic association (**r = −0.09, p = 0.872**).
-- **Matched downsampling:** at **n = 704**, XGBoost achieved higher AUC than CNN for human (**0.815 vs 0.775**) and rat (**0.802 vs 0.755**).
-- **Sequence-diversity analysis:** normalized pairwise Hamming-distance distributions were compared between strong- and weak-activity promoters across the six Stage 2 species.
-- **GC-controlled motif analysis:** k-mer analysis was repeated after GC normalization, and Fisher's exact tests with Benjamini–Hochberg false-discovery-rate correction were used for the reported statistical evaluation.
-- **Pooled-versus-species-specific comparison:** the pooled Stage 2 baseline results are reported above and in the Supplementary Information.
-
-These analyses are included to quantify stability, investigate possible sequence-composition effects, and clarify the scope of the species-wise Stage 2 results.
+The pooled analysis is reported as a baseline rather than a strict architecture-matched ablation.
 
 ---
 
-## Important Interpretation Notes
+## Repository contents
 
-### CAGE-derived activity is context dependent
+The repository provides the deployed web-server code, configuration files, dependency specification, processed test data, trained Stage 2 model files, and manuscript-related figures/resources.
 
-Stage 2 labels represent **CAGE-derived promoter activity**, not a context-independent intrinsic promoter property. For each species, promoter windows are matched to FANTOM5 CAGE peaks. When multiple CAGE peaks overlap one promoter window, their TPM values are averaged to obtain the representative activity used in the present dataset. Strong and weak labels are then defined relative to the species-specific activity distribution.
-
-### Intermediate activity
-
-The middle 50% of the species-specific activity distribution (Q25–Q75) is excluded from Stage 2 training to reduce label ambiguity. In the web interface, predictions close to the strong/weak decision boundary are flagged as **“Low Confidence — intermediate activity possible.”** This flag is a cautionary output and is not a separately trained biological third class.
-
-### SHAP scope
-
-SHAP analysis is conducted on a **surrogate one-hot CNN**, not directly on the primary integer-encoded CNN–BiLSTM. SHAP plots should therefore be interpreted as explanations of the surrogate classifier and as approximate evidence of related sequence-level patterns.
-
-### Data-partition limitation
-
-CD-HIT redundancy filtering at a 0.90 similarity threshold is applied before Stage 1 data partitioning. The full multi-species split is sequence based, so residual relatedness among alternative TSSs from the same locus cannot be completely excluded. Gene-aware validation was additionally performed where suitable gene annotations were available.
-
----
-
-## Repository Structure
+Key files include:
 
 ```text
-Generalized-Eukaryotic-Promoter-Prediction/
-│
-├── README.md
-├── LICENSE
-├── environment.yml
-├── requirements.txt
-├── Dockerfile
-│
-├── data/
-│   ├── stage1/
-│   │   ├── train.fasta
-│   │   ├── val.fasta
-│   │   ├── test.fasta
-│   │   └── drosophila_test.fasta
-│   └── stage2/
-│       ├── human/
-│       ├── mouse/
-│       ├── rat/
-│       ├── dog/
-│       ├── chicken/
-│       └── macaque/
-│
-├── models/
-│   ├── stage1_cnn_bilstm.pt
-│   ├── stage2_human_cnn.pt
-│   ├── stage2_mouse_xgboost.pkl
-│   ├── stage2_rat_cnn.pt
-│   ├── stage2_dog_cnn.pt
-│   ├── stage2_chicken_cnn.pt
-│   └── stage2_macaque_cnn.pt
-│
-├── src/
-│   ├── predict_stage1.py
-│   ├── predict_stage2.py
-│   ├── predict_pipeline.py
-│   ├── train_stage1.py
-│   ├── train_stage2.py
-│   ├── model_stage1.py
-│   ├── model_stage2.py
-│   └── encoding.py
-│
-├── web_server/
-│   ├── app.py
-│   ├── templates/
-│   └── static/
-│
-├── figures/
-│   ├── graphical_abstract.jpg
-│   └── generate_figures.py
-│
-├── supplementary/
-│   ├── SupplementaryFile.docx
-│   └── table_s2_cage_files.csv
-│
-└── results/
-    └── example_predictions.csv
+README.md
+app.py
+config.py
+model_utils.py
+requirements.txt
+independent_test_split.csv
+
+Human_model_weights.pth
+Mouse_xgboost_model.pkl
+Mouse_scaler.pkl
+RAT_model_weights.pth
+Dog_model_weights.pth
+Chicken_model_weights.pth
+macaque_model_weights.pth
+
+templates/
+static/
+uploads/
+outputs/
 ```
 
-> **Repository consistency check:** before public release, verify that every file/path shown above exists in the repository. Remove entries that are not distributed.
 
 ---
 
 ## Installation
 
-### Option 1 — Conda (recommended)
+### Option 1 — Python virtual environment
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-.git
-cd Generalized-Eukaryotic-Promoter-Prediction
+cd Generalized-Eukaryotic-Promoter-
+```
+
+Create and activate a virtual environment.
+
+**Linux/macOS**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+**Windows**
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+Install dependencies:
+
+```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Launch the web server:
+
+```bash
+python app.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5000
+```
+
+### Option 2 — Conda
+
+If `environment.yml` is distributed with the release:
+
+```bash
+git clone https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-.git
+cd Generalized-Eukaryotic-Promoter-
 conda env create -f environment.yml
 conda activate promoternet
-python src/predict_stage1.py --help
+python app.py
 ```
 
-A successful `--help` call verifies that the environment can load the prediction entry point.
+Open:
 
-### Option 2 — Docker
+```text
+http://127.0.0.1:5000
+```
 
-Build the container:
+### Option 3 — Docker
+
+If `Dockerfile` is distributed with the release:
 
 ```bash
 git clone https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-.git
-cd Generalized-Eukaryotic-Promoter-Prediction
+cd Generalized-Eukaryotic-Promoter-
 docker build -t promoternet .
+docker run --rm -p 5000:5000 promoternet python app.py
 ```
 
-Run Stage 1:
+Open:
 
-```bash
-docker run --rm \
-  -v "$(pwd)/data:/data" \
-  -v "$(pwd)/results:/results" \
-  promoternet \
-  python src/predict_stage1.py \
-  --input /data/example.fasta \
-  --output /results/stage1_predictions.csv
+```text
+http://127.0.0.1:5000
 ```
-
-Run the local web application:
-
-```bash
-docker run --rm -p 5000:5000 promoternet python web_server/app.py
-```
-
-Then open `http://localhost:5000`.
-
-### Option 3 — pip
-
-```bash
-git clone https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-.git
-cd Generalized-Eukaryotic-Promoter-Prediction
-python -m venv .venv
-source .venv/bin/activate        # Linux/macOS
-# .venv\Scripts\activate         # Windows
-pip install -r requirements.txt
-python src/predict_stage1.py --help
-```
-
-For CUDA acceleration, install the PyTorch build appropriate for the local CUDA environment before running GPU inference.
 
 ---
 
-## Quick Usage Tutorial
+## Web-server tutorial
 
-### Stage 1 — promoter prediction
+### 1. Prepare the input
 
-```bash
-python src/predict_stage1.py \
-  --input your_sequences.fasta \
-  --model models/stage1_cnn_bilstm.pt \
-  --output results/stage1_predictions.csv \
-  --threshold 0.5
+PromoterNet accepts:
+
+- a single 300-bp DNA sequence,
+- a multi-FASTA block,
+- a `.txt`, `.fasta`, `.fa`, or `.fna` file containing one or more sequences.
+
+### 2. Set the Stage 1 threshold
+
+The default promoter-probability threshold is:
+
+```text
+0.5
 ```
 
-Expected Stage 1 output fields:
+Sequences with Stage 1 probability at or above the selected threshold are classified as promoter candidates.
 
-| Column | Description |
-|---|---|
-| `sequence_id` | FASTA sequence identifier |
-| `stage1_probability` | predicted promoter probability |
-| `stage1_prediction` | `Promoter` or `Non-Promoter` |
+### 3. Select the known Stage 2 species
 
-### Stage 2 — promoter activity classification
+For promoter-activity classification, select the known target species:
 
-Stage 2 should be applied only to promoter-positive or experimentally verified promoter sequences. **Species selection is required.**
+- Human
+- Mouse
+- Rat
+- Dog
+- Chicken
+- Rhesus macaque
 
-```bash
-python src/predict_stage2.py \
-  --input promoter_sequences.fasta \
-  --species human \
-  --output results/stage2_predictions.csv
-```
+Only the corresponding Stage 2 model is used for that sequence.
 
-Supported `--species` values:
+### 4. Run prediction
 
-| Value | Organism | Final model | Reported assembly |
-|---|---|---|---|
-| `human` | *Homo sapiens* | CNN | hg38 |
-| `mouse` | *Mus musculus* | XGBoost | mm9 |
-| `rat` | *Rattus norvegicus* | CNN | rn6 |
-| `dog` | *Canis lupus familiaris* | CNN | canFam3 |
-| `chicken` | *Gallus gallus* | CNN | galGal5 |
-| `macaque` | *Macaca mulatta* | CNN | rheMac8 |
+Click **Predict**.
 
-Expected Stage 2 output fields:
+The interface reports:
 
-| Column | Description |
-|---|---|
-| `species` | user-selected species |
-| `stage2_probability` | predicted strong-activity probability |
-| `stage2_prediction` | `Strong`, `Weak`, or `Low Confidence` |
+- Stage 1 promoter probability,
+- promoter/non-promoter classification,
+- Stage 2 activity classification for promoter-positive inputs,
+- result summaries and visualizations.
 
-### Full two-stage pipeline
+### 5. Download outputs
 
-```bash
-python src/predict_pipeline.py \
-  --input your_sequences.fasta \
-  --species human \
-  --output results/full_predictions.csv \
-  --stage1_threshold 0.5
-```
+Available outputs include:
 
-Sequences classified as non-promoters in Stage 1 are excluded from Stage 2. The pipeline does **not** use cross-model confidence scores for species identification.
+- predicted promoter sequences in FASTA format,
+- generated result charts,
+- per-sequence prediction information.
+
+Use **Reset** to clear the current analysis and begin a new prediction.
 
 ---
 
-## Web Server
+## Example input
 
-A hosted implementation is available at:
+FASTA format:
 
-**https://promoter-prediction-app.onrender.com/**
-
-To run locally:
-
-```bash
-python web_server/app.py
+```text
+>example_1
+ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT
+...
 ```
 
-Then open `http://localhost:5000`.
-
-The interface supports:
-
-- pasted single-sequence or multi-FASTA input;
-- `.fasta` and `.txt` upload;
-- adjustable Stage 1 probability threshold (default 0.5);
-- **required species selection for Stage 2**;
-- Stage 1 promoter probability and class;
-- Stage 2 strong/weak CAGE-derived activity prediction;
-- low-confidence warning for borderline Stage 2 predictions;
-- downloadable prediction output.
-
-> The Stage 2 species-specific classifiers were trained for strong/weak activity classification, not species recognition. Do not infer species by comparing confidence scores across independently trained Stage 2 models.
+Each sequence supplied to the released model should contain **300 nucleotides**.
 
 ---
 
-## Input Format
-
-For manuscript reproduction, sequences should be **exactly 300 bp**, corresponding to positions **−249 to +50 bp relative to the TSS**.
-
-```fasta
->sequence_id_1
-ACGT...300_bp_sequence...
->sequence_id_2
-TGCA...300_bp_sequence...
-```
-
-- Standard DNA bases A, C, G, and T are supported.
-- Ambiguous bases should be handled consistently with the preprocessing script used to reproduce the manuscript analysis.
-- If a convenience inference script supports padding or trimming, that behavior should not be treated as equivalent to the manuscript's fixed 300 bp benchmark construction.
-
----
-
-## Feature Encoding Schemes
-
-Eight sequence-encoding schemes were evaluated:
-
-1. One-Hot Encoding
-2. Integer Encoding
-3. Nucleotide Chemical Properties (NCP)
-4. Physical Properties Encoding
-5. Dinucleotide Composition
-6. k-mer Frequency Encoding
-7. Pseudo Nucleotide Composition (PseKNC)
-8. DNA Duplex Stability (DDS) Encoding
-
-The complete mathematical definitions, equations, and parameter descriptions are provided in **Supplementary File 1, Supplementary Note S1**.
-
----
-
-## Datasets
+## Data and benchmark construction
 
 ### Stage 1
 
-- Source: EPDnew experimentally supported promoters.
-- Promoter sequences collected from 16 species.
-- **15 species used for development**; *D. melanogaster* withheld entirely for cross-species evaluation.
-- Negative samples: species-matched GC-balanced non-promoter sequences.
-- Sequence length: 300 bp (−249 to +50 relative to TSS).
-- Redundancy filtering: CD-HIT at 0.90 sequence-similarity threshold before partitioning.
-- Development split: 70% training / 15% validation / 15% held-out test, stratified to approximately preserve species and class proportions.
+Promoter sequences were obtained from **EPDnew**. Species-matched non-promoter sequences were constructed with GC-content matching. Redundancy was reduced using CD-HIT before model development.
 
-**Stage 1 development species (15):**
-
-*Arabidopsis thaliana*, *Apis mellifera*, *Canis lupus familiaris*, *Homo sapiens*, *Gallus gallus*, *Macaca mulatta*, *Plasmodium falciparum*, *Rattus norvegicus*, *Saccharomyces cerevisiae*, *Hordeum vulgare*, *Schizosaccharomyces pombe*, *Caenorhabditis elegans*, *Danio rerio*, *Zea mays*, and *Mus musculus*.
-
-**Withheld cross-species test:**
-
-*Drosophila melanogaster* — 16,972 promoters + 16,972 GC-matched non-promoters.
+Fifteen species were used for Stage 1 development, while *D. melanogaster* was kept completely outside model development for independent cross-species evaluation.
 
 ### Stage 2
 
-- Species: human, mouse, rat, dog, chicken, and rhesus macaque.
-- Source of activity labels: FANTOM5 CAGE peak expression data.
-- Promoter window: the same 300 bp TSS-centered window used in the study.
-- Multiple overlapping CAGE peaks within one promoter window: mean TPM aggregation.
-- Strong activity: TPM ≥ species-specific Q75.
-- Weak activity: TPM ≤ species-specific Q25.
-- Intermediate activity (Q25–Q75): excluded from model training/evaluation.
+Species-specific promoter activity labels were derived using **FANTOM5 CAGE** data.
 
-Full Stage 2 counts and CAGE-file information are provided in the Supplementary Information.
+Within each species:
 
----
+- the upper activity quartile was labeled strong/high activity,
+- the lower activity quartile was labeled weak/low activity,
+- the middle 50% was excluded from binary training.
 
-## Trained Models
-
-| File | Description | Format |
-|---|---|---|
-| `stage1_cnn_bilstm.pt` | Stage 1 CNN–BiLSTM self-attention model | PyTorch |
-| `stage2_human_cnn.pt` | Human Stage 2 CNN | PyTorch |
-| `stage2_mouse_xgboost.pkl` | Mouse Stage 2 XGBoost | pickle |
-| `stage2_rat_cnn.pt` | Rat Stage 2 CNN | PyTorch |
-| `stage2_dog_cnn.pt` | Dog Stage 2 CNN | PyTorch |
-| `stage2_chicken_cnn.pt` | Chicken Stage 2 CNN | PyTorch |
-| `stage2_macaque_cnn.pt` | Macaque Stage 2 CNN | PyTorch |
-
-Complete hyperparameters, random seeds, and supplementary validation results should be distributed with the release so that the reported experiments can be reproduced.
+The processed datasets, exact sample counts, genome-build information, CAGE aggregation details, validation analyses, and supplementary statistics are documented in the accompanying manuscript and Supporting Information.
 
 ---
 
-## Reproducing the Reported Analyses
+## Model interpretation
 
-For reproducibility, the public release should contain the exact processed data/split identifiers, model weights, and scripts used for the manuscript analyses. At minimum, users should be able to reproduce:
+Two complementary interpretation strategies are used.
 
-1. Stage 1 held-out test metrics.
-2. Stage 1 five-fold cross-validation results.
-3. Withheld *D. melanogaster* binary evaluation.
-4. Six species-specific Stage 2 evaluations.
-5. Pooled Stage 2 baseline.
-6. Stage 2 sample-size/downsampling analysis.
-7. Hamming-distance sequence-diversity analysis.
-8. Surrogate-CNN SHAP stability analysis.
-9. GC-controlled motif analysis and FDR-corrected statistical testing.
-10. Main and supplementary figures.
+### Attention analysis
 
-Where randomness is used, publish the corresponding seed and split file together with the result.
+Attention weights from the primary Stage 1 CNN-BiLSTM model are used to identify promoter-associated sequence regions and motifs.
+
+### Surrogate-CNN SHAP analysis
+
+SHAP analysis is performed using a **surrogate one-hot CNN**, not directly on the primary CNN-BiLSTM model.
+
+Accordingly, SHAP-associated k-mers and nucleotide-level contributions are interpreted as **complementary model-associated evidence**, not as direct attribution of the primary CNN-BiLSTM.
+
 
 ---
 
-## Installation and Usage Video
+## Reproducibility
 
-The editor requested a complete demonstration recorded on a clean computer/server showing repository download, installation, execution, and result display.
+The repository provides the inference code, dependency specification, processed test data, released trained models, and configuration used by the web server.
 
-**Permanent video tutorial URL:** `ADD_PERMANENT_VIDEO_URL_BEFORE_SUBMISSION`
+For the deployed inference workflow:
 
-The video should demonstrate, in order:
+```bash
+git clone https://github.com/ShujaatMuhammad/Generalized-Eukaryotic-Promoter-.git
+cd Generalized-Eukaryotic-Promoter-
+pip install -r requirements.txt
+python app.py
+```
 
-1. cloning/downloading the repository;
-2. creating the Conda environment or building the Docker image;
-3. running the installation verification command;
-4. executing Stage 1 on the included test/example data;
-5. executing Stage 2 with an explicitly selected species;
-6. launching the web server;
-7. displaying and downloading prediction results.
+The released independent test split is provided as:
 
-> Replace the placeholder above with the permanent public video URL before journal resubmission.
+```text
+independent_test_split.csv
+```
+
+Model files used by the Stage 2 web-server implementation are distributed with the repository/release.
+
+Experimental details including cross-validation, gene-aware validation, pooled modeling, downsampling, motif statistics, and GC-controlled analyses are reported in the Supporting Information associated with the manuscript.
 
 ---
 
-## Troubleshooting
+## Limitations
 
-**CUDA out-of-memory**  
-Reduce the inference batch size or run on CPU.
+PromoterNet should be interpreted within the scope of the released benchmark.
 
-**Input sequence is not 300 bp**  
-For reproduction of manuscript results, construct the same −249 to +50 bp promoter window rather than relying on automatic padding/trimming.
-
-**Stage 2 returns Low Confidence**  
-The Stage 2 models are trained on the upper and lower quartiles of the CAGE activity distribution. A probability near the decision boundary may correspond to an intermediate-activity sequence and should be interpreted cautiously.
-
-**Species is not supported in Stage 2**  
-Use Stage 1 only. Stage 2 is currently limited to the six species for which the CAGE-derived activity datasets were constructed.
-
-**Web server does not start locally**  
-Check that the configured port is free and that all model files are present at the paths expected by `web_server/app.py`.
+- The current models classify predefined **300-bp TSS-centered windows** rather than performing unrestricted genome-wide scanning.
+- Stage 2 activity labels are based on upper/lower FANTOM5 CAGE quartiles within individual species.
+- The excluded middle 50% is **not** a separately trained third class.
+- CAGE activity is tissue- and condition-dependent.
+- Stage 2 performance can be sensitive to the amount and composition of species-specific labeled data.
+- SHAP interpretation is based on a surrogate CNN rather than direct SHAP attribution of the primary CNN-BiLSTM.
+- The pooled Stage 2 experiment is a baseline and not a strict architecture-controlled ablation.
 
 ---
 
 ## Citation
 
-If you use this repository, please cite the manuscript after publication. Until a final bibliographic record is available, use:
+If you use PromoterNet, please cite the associated manuscript:
 
-```bibtex
-@misc{shujaat2026eukaryoticpromoter,
-  title  = {A Two-Stage Framework for Generalized Eukaryotic Promoter Prediction and Promoter Strength Classification},
-  author = {Shujaat, Muhammad and Mao, Shi-Qing},
-  year   = {2026},
-  note   = {Manuscript under revision}
-}
-```
+> Muhammad Shujaat and Shi-Qing Mao. *A Two-Stage Framework for Generalized Eukaryotic Promoter Prediction and Promoter Strength Classification.*
 
-Do not replace this with a journal volume, issue, or DOI until those details are officially assigned.
+A formal journal citation can be added after publication.
 
 ---
 
-## License
+## Authors
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+**Muhammad Shujaat**  
+Shenzhen University
 
----
-
-## Acknowledgments
-
-- EPDnew for experimentally supported eukaryotic promoter data.
-- FANTOM5 for CAGE-based transcriptional activity resources.
-- Shenzhen University, Institute for Advanced Study.
+**Shi-Qing Mao**  
+Shenzhen University
 
 ---
 
 ## Contact
 
-For software issues, please open a GitHub Issue. contact **Dr. Shujaat (shujaat@szu.edu.cn)**.
+For questions about the software, models, datasets, or web server, please use the GitHub **Issues** page or contact the corresponding author listed in the manuscript.
+
+---
+
+## License
+
+Please refer to the repository `LICENSE` file for reuse and redistribution terms.
+
